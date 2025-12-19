@@ -3,6 +3,9 @@ const mongoose = require('mongoose');
 const path = require('path'); 
 const Contact = require('./models/Contact'); 
 
+const authRoutes = require('./auth'); // Import the auth logic
+app.use('/api/auth', authRoutes);     // Use the auth logic
+
 const app = express();
 app.use(express.json());
 
@@ -17,7 +20,7 @@ mongoose.connect(MONGO_URL)
 
 // --- API ROUTES ---
 
-// Create a New Contact
+// 1. Create a New Contact
 app.post('/api/contacts', async (req, res) => {
     try {
         const newContact = new Contact(req.body);
@@ -28,7 +31,7 @@ app.post('/api/contacts', async (req, res) => {
     }
 });
 
-// Get All Contacts
+// 2. Get All Contacts
 app.get('/api/contacts', async (req, res) => {
     const contacts = await Contact.find();
     res.json(contacts);

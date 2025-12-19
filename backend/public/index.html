@@ -43,6 +43,15 @@
     </div>
 
     <script>
+        // Security Guard: Check for token on page load
+        if (!localStorage.getItem('skyy_token')) {
+            window.location.href = '/login.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('skyy_token');
+            window.location.href = '/login.html';
+        }
         let allContacts = [];
 
         async function loadContacts() {
