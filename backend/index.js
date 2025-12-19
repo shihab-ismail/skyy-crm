@@ -49,6 +49,21 @@ app.put('/api/contacts/:id', async (req, res) => {
     }
 });
 
+// Full Edit (Update all fields)
+app.put('/api/contacts/edit/:id', async (req, res) => {
+    try {
+        const { name, email, company } = req.body;
+        const updated = await Contact.findByIdAndUpdate(
+            req.params.id, 
+            { name, email, company }, 
+            { new: true }
+        );
+        res.json(updated);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
 app.delete('/api/contacts/:id', async (req, res) => {
     await Contact.findByIdAndDelete(req.params.id);
     res.json({ message: "Lead deleted successfully" });

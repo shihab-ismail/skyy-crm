@@ -89,6 +89,7 @@
                             </select>
                         </td>
                         <td>
+                            <button style="background: #eab308; width: auto; padding: 5px 10px;" onclick="editContact('${c._id}', '${c.name}', '${c.email}', '${c.company}')">✏️ Edit</button>
                             <button class="btn-delete" onclick="deleteContact('${c._id}')">🗑️ Delete</button>
                         </td>
                     </tr>
@@ -127,6 +128,25 @@
                 body: JSON.stringify({ status: newStatus })
             });
             loadContacts();
+        }
+
+        async function editContact(id, oldName, oldEmail, oldCompany) {
+            const newName = prompt("Edit Name:", oldName);
+            const newEmail = prompt("Edit Email:", oldEmail);
+            const newCompany = prompt("Edit Company:", oldCompany);
+
+            if (newName && newEmail) {
+                await fetch(`/api/contacts/edit/${id}`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ 
+                        name: newName, 
+                        email: newEmail, 
+                        company: newCompany 
+                    })
+                });
+                loadContacts();
+            }
         }
 
         async function deleteContact(id) {
