@@ -69,4 +69,19 @@ app.delete('/api/contacts/:id', async (req, res) => {
     res.json({ message: "Lead deleted successfully" });
 });
 
+// 6. Add a Note to a Lead
+app.post('/api/contacts/:id/notes', async (req, res) => {
+    try {
+        const { note } = req.body;
+        const updated = await Contact.findByIdAndUpdate(
+            req.params.id,
+            { $push: { notes: note } }, // $push adds to the array
+            { new: true }
+        );
+        res.json(updated);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
 app.listen(3000, () => console.log('🚀 Skyy-CRM Server flying on port 3000'));
