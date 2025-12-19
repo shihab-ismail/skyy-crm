@@ -27,6 +27,7 @@
     </div>
 
     <div class="list-container">
+        <button onclick="logout()" style="width: auto; background: #64748b; padding: 5px 15px; margin-bottom: 10px; float: right;">Logout</button>
         <h2>📂 Database</h2>
         <input type="text" id="search" placeholder="🔍 Search leads by name..." onkeyup="filterContacts()">
         
@@ -43,19 +44,32 @@
     </div>
 
     <script>
-        // Security Guard: Check for token on page load
+        // 1. Security Guard: Check for token on page load
         if (!localStorage.getItem('skyy_token')) {
             window.location.href = '/login.html';
         }
 
+        // 2. Logout function
         function logout() {
             localStorage.removeItem('skyy_token');
             window.location.href = '/login.html';
         }
+
         let allContacts = [];
 
+        // Helper to get headers with the Token
+        const getAuthHeaders = () => ({
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('skyy_token')}`
+        });
+
         async function loadContacts() {
-            const response = await fetch('/api/contacts');
+            const response = await fetch('/api/contacts', {
+                headers: getAuthHeaders() // Added token to request
+            });
+            
+            if (response.status === 401) logout(); // Kick out if token expired
+            
             allContacts = await response.json();
             renderTable(allContacts);
         }
@@ -97,7 +111,7 @@
             };
             await fetch('/api/contacts', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(), // Added token to request
                 body: JSON.stringify(data)
             });
             document.getElementById('name').value = '';
@@ -109,7 +123,7 @@
         async function updateStatus(id, newStatus) {
             await fetch(`/api/contacts/${id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(), // Added token to request
                 body: JSON.stringify({ status: newStatus })
             });
             loadContacts();
@@ -117,7 +131,10 @@
 
         async function deleteContact(id) {
             if(confirm("Are you sure you want to delete this lead?")) {
-                await fetch(`/api/contacts/${id}`, { method: 'DELETE' });
+                await fetch(`/api/contacts/${id}`, { 
+                    method: 'DELETE',
+                    headers: getAuthHeaders() // Added token to request
+                });
                 loadContacts();
             }
         }
