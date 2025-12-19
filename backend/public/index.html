@@ -2,17 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Skyy-CRM | Dashboard</title>
+    <title>Skyy-CRM Dashboard</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #f8fafc; padding: 40px; display: flex; gap: 40px; }
-        .form-container { background: #1e293b; padding: 2rem; border-radius: 12px; width: 350px; height: fit-content; }
-        .list-container { flex-grow: 1; background: #1e293b; padding: 2rem; border-radius: 12px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; display: flex; gap: 20px; }
+        .form-container { background: #1e293b; padding: 1.5rem; border-radius: 12px; width: 300px; height: fit-content; border: 1px solid #334155; }
+        .list-container { flex-grow: 1; background: #1e293b; padding: 1.5rem; border-radius: 12px; border: 1px solid #334155; }
         h2 { color: #38bdf8; margin-top: 0; }
-        input { width: 100%; padding: 10px; margin-bottom: 1rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; }
+        input, select { width: 100%; padding: 10px; margin-bottom: 1rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; }
         button { width: 100%; padding: 10px; background: #38bdf8; color: #0f172a; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-delete { background: #f87171; width: auto; padding: 5px 10px; margin-left: 5px; color: white; }
         table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-        th { text-align: left; border-bottom: 2px solid #475569; padding: 10px; color: #38bdf8; }
-        td { padding: 10px; border-bottom: 1px solid #334155; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #334155; }
+        .status-tag { padding: 4px 8px; border-radius: 4px; font-weight: bold; background: #0f172a; border: 1px solid #475569; color: white; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -22,62 +23,96 @@
         <input type="text" id="name" placeholder="Full Name">
         <input type="email" id="email" placeholder="Email">
         <input type="text" id="company" placeholder="Company">
-        <button onclick="saveContact()">Add to CRM</button>
+        <button onclick="saveContact()">Add Lead</button>
     </div>
 
     <div class="list-container">
-        <h2>📂 Contact Database</h2>
+        <h2>📂 Database</h2>
+        <input type="text" id="search" placeholder="🔍 Search leads by name..." onkeyup="filterContacts()">
+        
         <table>
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Company</th>
+                    <th>Contact Info</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
-            <tbody id="contact-list">
-                </tbody>
+            <tbody id="contact-list"></tbody>
         </table>
     </div>
 
     <script>
-        // Function to load contacts from the API
+        let allContacts = [];
+
         async function loadContacts() {
             const response = await fetch('/api/contacts');
-            const contacts = await response.json();
+            allContacts = await response.json();
+            renderTable(allContacts);
+        }
+
+        function renderTable(data) {
             const list = document.getElementById('contact-list');
-            list.innerHTML = ''; // Clear current list
-            
-            contacts.forEach(c => {
+            list.innerHTML = '';
+            data.forEach(c => {
                 list.innerHTML += `
                     <tr>
-                        <td>${c.name}</td>
-                        <td>${c.email}</td>
-                        <td>${c.company || 'N/A'}</td>
+                        <td><strong>${c.name}</strong><br><small style="color:#94a3b8">${c.email} | ${c.company || 'No Company'}</small></td>
+                        <td>
+                            <select onchange="updateStatus('${c._id}', this.value)" class="status-tag">
+                                <option value="New" ${c.status === 'New' ? 'selected' : ''}>New</option>
+                                <option value="In Progress" ${c.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="Closed" ${c.status === 'Closed' ? 'selected' : ''}>Closed</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button class="btn-delete" onclick="deleteContact('${c._id}')">🗑️ Delete</button>
+                        </td>
                     </tr>
                 `;
             });
         }
 
-        // Function to save a new contact
+        function filterContacts() {
+            const query = document.getElementById('search').value.toLowerCase();
+            const filtered = allContacts.filter(c => c.name.toLowerCase().includes(query));
+            renderTable(filtered);
+        }
+
         async function saveContact() {
             const data = {
                 name: document.getElementById('name').value,
                 email: document.getElementById('email').value,
-                company: document.getElementById('company').value
+                company: document.getElementById('company').value,
+                status: "New"
             };
-
             await fetch('/api/contacts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
-
-            document.querySelectorAll('input').forEach(i => i.value = ''); // Clear form
-            loadContacts(); // Refresh the list
+            document.getElementById('name').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('company').value = '';
+            loadContacts();
         }
 
-        // Load contacts immediately when page opens
+        async function updateStatus(id, newStatus) {
+            await fetch(`/api/contacts/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+            loadContacts();
+        }
+
+        async function deleteContact(id) {
+            if(confirm("Are you sure you want to delete this lead?")) {
+                await fetch(`/api/contacts/${id}`, { method: 'DELETE' });
+                loadContacts();
+            }
+        }
+
         loadContacts();
     </script>
 </body>

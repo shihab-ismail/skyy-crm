@@ -34,6 +34,25 @@ app.get('/api/contacts', async (req, res) => {
     res.json(contacts);
 });
 
+// 3. Update Status
+app.put('/api/contacts/:id', async (req, res) => {
+    try {
+        const updated = await Contact.findByIdAndUpdate(
+            req.params.id, 
+            { status: req.body.status }, 
+            { new: true }
+        );
+        res.json(updated);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+// 4. Delete a Lead
+app.delete('/api/contacts/:id', async (req, res) => {
+    await Contact.findByIdAndDelete(req.params.id);
+    res.json({ message: "Lead deleted successfully" });
+});
 
 // NOTE: I removed the app.get('/') text block that was here before!
 

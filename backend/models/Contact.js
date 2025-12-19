@@ -7,8 +7,9 @@ const ContactSchema = new mongoose.Schema({
     company: String,
     status: { 
         type: String, 
-        enum: ['Lead', 'Negotiation', 'Closed'], 
-        default: 'Lead' 
+        // We updated these to match the Dashboard dropdowns
+        enum: ['New', 'In Progress', 'Closed'], 
+        default: 'New' 
     },
     notes: [String],
     date: { type: Date, default: Date.now }
