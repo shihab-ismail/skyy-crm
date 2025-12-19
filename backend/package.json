@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "description": "Backend for Skyy-CRM",
   "main": "index.js",
-  "type": "commonjs", 
+  "type": "commonjs",
   "scripts": {
     "start": "node index.js",
     "dev": "node --watch index.js"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.0.2"
   }
 }
