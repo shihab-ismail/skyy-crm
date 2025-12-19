@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Skyy-CRM | Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #f8fafc; padding: 40px; display: flex; gap: 40px; }
+        .form-container { background: #1e293b; padding: 2rem; border-radius: 12px; width: 350px; height: fit-content; }
+        .list-container { flex-grow: 1; background: #1e293b; padding: 2rem; border-radius: 12px; }
+        h2 { color: #38bdf8; margin-top: 0; }
+        input { width: 100%; padding: 10px; margin-bottom: 1rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #38bdf8; color: #0f172a; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th { text-align: left; border-bottom: 2px solid #475569; padding: 10px; color: #38bdf8; }
+        td { padding: 10px; border-bottom: 1px solid #334155; }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>🚀 New Lead</h2>
+        <input type="text" id="name" placeholder="Full Name">
+        <input type="email" id="email" placeholder="Email">
+        <input type="text" id="company" placeholder="Company">
+        <button onclick="saveContact()">Add to CRM</button>
+    </div>
+
+    <div class="list-container">
+        <h2>📂 Contact Database</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Company</th>
+                </tr>
+            </thead>
+            <tbody id="contact-list">
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Function to load contacts from the API
+        async function loadContacts() {
+            const response = await fetch('/api/contacts');
+            const contacts = await response.json();
+            const list = document.getElementById('contact-list');
+            list.innerHTML = ''; // Clear current list
+            
+            contacts.forEach(c => {
+                list.innerHTML += `
+                    <tr>
+                        <td>${c.name}</td>
+                        <td>${c.email}</td>
+                        <td>${c.company || 'N/A'}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Function to save a new contact
+        async function saveContact() {
+            const data = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                company: document.getElementById('company').value
+            };
+
+            await fetch('/api/contacts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            document.querySelectorAll('input').forEach(i => i.value = ''); // Clear form
+            loadContacts(); // Refresh the list
+        }
+
+        // Load contacts immediately when page opens
+        loadContacts();
+    </script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  # The Database Service
+  mongodb:
+    image: mongo:latest
+    container_name: skyy_db
+    ports:
+      - "27017:27017" # Connect via MongoDB Compass on your laptop
+    volumes:
+      - ./mongo-data:/data/db # This keeps your data safe if you turn off the computer
+
+  # Your CRM Backend Service
+  backend:
+    build: ./backend # Tells Docker to look in the /backend folder for the Dockerfile
+    volumes:
+    - ./backend:/usr/src/app
+    - /usr/src/app/node_modules # Don't overwrite container modules
+    container_name: skyy_app
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGO_URL=mongodb://mongodb:27017/skyy_db
+    depends_on:
+      - mongodb # Ensures the database starts before the app

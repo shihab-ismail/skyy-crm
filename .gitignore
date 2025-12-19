@@ -1,0 +1,12 @@
+# Dependency folders
+node_modules/
+
+# Local database data (DO NOT REMOVE THIS - it keeps your repo clean)
+mongo-data/
+
+# Environment variables (security)
+.env
+
+# OS specific files
+.DS_Store
+Thumbs.db
