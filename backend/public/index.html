@@ -14,6 +14,69 @@
         table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         th, td { text-align: left; padding: 12px; border-bottom: 1px solid #334155; }
         .status-tag { padding: 4px 8px; border-radius: 4px; font-weight: bold; background: #0f172a; border: 1px solid #475569; color: white; cursor: pointer; }
+
+        /* 1. Fix the height of the list and add a scrollbar */
+        .list-container {
+            flex-grow: 1;
+            background: #1e293b;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            height: 85vh; /* Takes up most of the screen height */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 2. Keep the Search bar at the very top */
+        #search {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            margin-bottom: 1rem;
+        }
+
+        /* 3. The magic: Make the table scrollable but the header sticky */
+        .table-wrapper {
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        /* 1. Reset the table to handle sticky borders properly */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        /* 2. Style the headers */
+        thead th {
+            position: sticky;
+            top: 0;
+            background: #1e293b; /* Must match container background */
+            z-index: 10;
+            padding: 12px;
+            text-align: left;
+            color: #38bdf8;
+            border: none; /* Remove the old border property */
+        }
+
+        /* 3. The "Pseudo-Line" - This stays visible during scroll! */
+        thead th::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            border-bottom: 2px solid #38bdf8;
+        }
+
+        /* 4. Ensure cells have a background so they don't overlap messy */
+        td {
+            background: #1e293b;
+            padding: 12px;
+            border-bottom: 1px solid #334155;
+        }
+
     </style>
 </head>
 <body>
@@ -26,11 +89,15 @@
         <button onclick="saveContact()">Add Lead</button>
     </div>
 
-    <div class="list-container">
-        <button onclick="logout()" style="width: auto; background: #64748b; padding: 5px 15px; margin-bottom: 10px; float: right;">Logout</button>
+<div class="list-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <h2>📂 Database</h2>
-        <input type="text" id="search" placeholder="🔍 Search leads by name..." onkeyup="filterContacts()">
-        
+        <button onclick="logout()" style="width: auto; background: #64748b; padding: 5px 15px;">Logout</button>
+    </div>
+    
+    <input type="text" id="search" placeholder="🔍 Search leads by name..." onkeyup="filterContacts()">
+    
+    <div class="table-wrapper">
         <table>
             <thead>
                 <tr>
@@ -42,6 +109,7 @@
             <tbody id="contact-list"></tbody>
         </table>
     </div>
+</div>
 
     <script>
         // 1. Security Guard: Check for token on page load
