@@ -149,7 +149,7 @@
                 list.innerHTML += `
                     <tr>
                         <td>
-                            <strong>${c.name}</strong><br>
+                            <strong onclick="openTasks('${c._id}', '${c.name}')" style="color:#38bdf8; cursor:pointer;">${c.name}</strong>
                             <small style="color:#94a3b8">${c.email} | ${c.company || 'No Company'}</small>
                             <div style="margin-top: 5px; font-size: 0.8rem;">
                                 ${c.notes && c.notes.length > 0 ? 
@@ -248,8 +248,58 @@
                 loadContacts();
             }
         }
+        let activeContactId = null;
 
+        async function openTasks(id, name) {
+            activeContactId = id;
+            document.getElementById('modalTitle').innerText = `Tasks: ${name}`;
+            document.getElementById('taskModal').style.display = 'flex';
+            loadTasks();
+        }
+
+        async function loadTasks() {
+            const res = await fetch(`/api/tasks/${activeContactId}`, { headers: getAuthHeaders() });
+            const tasks = await res.json();
+            const list = document.getElementById('taskList');
+            list.innerHTML = tasks.map(t => `
+                <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #334155; align-items:center;">
+                    <span style="${t.completed ? 'text-decoration:line-through; color:#64748b' : ''}">${t.title}</span>
+                    <input type="checkbox" ${t.completed ? 'checked' : ''} onclick="toggleTask('${t._id}')">
+                </div>
+            `).join('');
+        }
+
+        async function saveTask() {
+            const title = document.getElementById('newTaskTitle').value;
+            if (!title) return;
+            await fetch('/api/tasks', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ contactId: activeContactId, title })
+            });
+            document.getElementById('newTaskTitle').value = '';
+            loadTasks();
+        }
+
+        async function toggleTask(id) {
+            await fetch(`/api/tasks/${id}`, { method: 'PATCH', headers: getAuthHeaders() });
+            loadTasks();
+        }
+
+        function closeModal() {
+            document.getElementById('taskModal').style.display = 'none';
+        }
         loadContacts();
     </script>
+    
+    <div id="taskModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100; justify-content:center; align-items:center;">
+        <div style="background:#1e293b; padding:2rem; border-radius:12px; width:400px; border:1px solid #38bdf8;">
+            <h3 id="modalTitle" style="color:#38bdf8; margin-top:0;">Tasks for Lead</h3>
+            <input type="text" id="newTaskTitle" placeholder="What needs to be done?">
+            <button onclick="saveTask()" style="margin-bottom:1rem;">Add Task</button>
+            <div id="taskList" style="max-height:200px; overflow-y:auto;"></div>
+            <button onclick="closeModal()" style="background:#64748b; margin-top:10px;">Close</button>
+        </div>
+    </div>
 </body>
 </html>

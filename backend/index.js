@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs'); // Added for the setup route
 const Contact = require('./models/Contact'); 
 const User = require('./models/User'); // Import User model
 const authRoutes = require('./auth'); 
+const Task = require('./models/Task');
 
 const app = express(); // 1. Create the app first!
 app.use(express.json());
@@ -82,6 +83,31 @@ app.post('/api/contacts/:id/notes', async (req, res) => {
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
+});
+
+// Get all tasks for a specific lead
+app.get('/api/tasks/:contactId', async (req, res) => {
+    const tasks = await Task.find({ contactId: req.params.contactId }).sort({ dueDate: 1 });
+    res.json(tasks);
+});
+
+// Create a new task
+app.post('/api/tasks', async (req, res) => {
+    try {
+        const newTask = new Task(req.body);
+        await newTask.save();
+        res.status(201).json(newTask);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+// Toggle task completion
+app.patch('/api/tasks/:id', async (req, res) => {
+    const task = await Task.findById(req.params.id);
+    task.completed = !task.completed;
+    await task.save();
+    res.json(task);
 });
 
 app.listen(3000, () => console.log('🚀 Skyy-CRM Server flying on port 3000'));
