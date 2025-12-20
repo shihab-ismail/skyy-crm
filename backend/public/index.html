@@ -76,7 +76,21 @@
             padding: 12px;
             border-bottom: 1px solid #334155;
         }
+#taskModal input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #0f172a;
+    border: 1px solid #475569;
+    color: white;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
 
+#taskList div:hover {
+    background: #2d3748;
+    cursor: default;
+}
     </style>
 </head>
 <body>
@@ -149,15 +163,20 @@
                 list.innerHTML += `
                     <tr>
                         <td>
-                            <strong onclick="openTasks('${c._id}', '${c.name}')" style="color:#38bdf8; cursor:pointer;">${c.name}</strong>
+                            <strong onclick="openTasks('${c._id}', '${c.name}')" style="color:#38bdf8; cursor:pointer;">
+                                ${c.name} 📋
+                            </strong>
+                            <br>
                             <small style="color:#94a3b8">${c.email} | ${c.company || 'No Company'}</small>
-                            <div style="margin-top: 5px; font-size: 0.8rem;">
+                            
+                            <div style="margin-top: 8px; font-size: 0.8rem; border-top: 1px border-style: none; padding-top: 4px;">
                                 ${c.notes && c.notes.length > 0 ? 
-                                    `Latest: ${c.notes[c.notes.length - 1]} 
-                                    <br><a href="#" onclick="alert('${c.notes.join('\\n')}'); return false;" style="color:#38bdf8">View All (${c.notes.length})</a>` 
-                                    : '<span style="color:#475569">No notes</span>'}
+                                    `<span style="color:#94a3b8">Latest:</span> ${c.notes[c.notes.length - 1]} 
+                                    <br><a href="#" onclick="alert('${c.notes.join('\\n')}'); return false;" style="color:#38bdf8; text-decoration:none;">🔍 View All (${c.notes.length})</a>` 
+                                    : '<span style="color:#475569 italic">No notes added</span>'}
                             </div>
                         </td>
+
                         <td>
                             <select onchange="updateStatus('${c._id}', this.value)" class="status-tag">
                                 <option value="New" ${c.status === 'New' ? 'selected' : ''}>New</option>
@@ -165,16 +184,17 @@
                                 <option value="Closed" ${c.status === 'Closed' ? 'selected' : ''}>Closed</option>
                             </select>
                         </td>
+
                         <td>
-                            <button style="background: #38bdf8; width: auto; padding: 5px 10px;" onclick="addNote('${c._id}')">📝 Note</button>
-                            <button style="background: #eab308; width: auto; padding: 5px 10px;" onclick="editContact('${c._id}', '${c.name}', '${c.email}', '${c.company}')">✏️ Edit</button>
-                            <button class="btn-delete" onclick="deleteContact('${c._id}')">🗑️ Delete</button>
+                            <button style="background: #38bdf8; width: auto; padding: 5px 10px; margin-bottom: 2px;" onclick="addNote('${c._id}')">📝 Note</button>
+                            <button style="background: #eab308; width: auto; padding: 5px 10px; margin-bottom: 2px;" onclick="editContact('${c._id}', '${c.name}', '${c.email}', '${c.company}')">✏️ Edit</button>
+                            <button class="btn-delete" style="width: auto; padding: 5px 10px;" onclick="deleteContact('${c._id}')">🗑️ Delete</button>
                         </td>
                     </tr>
                 `;
             });
         }
-
+        
         function filterContacts() {
             const query = document.getElementById('search').value.toLowerCase();
             const filtered = allContacts.filter(c => c.name.toLowerCase().includes(query));
@@ -248,6 +268,7 @@
                 loadContacts();
             }
         }
+
         let activeContactId = null;
 
         async function openTasks(id, name) {
